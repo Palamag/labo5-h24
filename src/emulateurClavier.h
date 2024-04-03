@@ -6,6 +6,8 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <stdlib.h>
+#include <string.h>
 
 // Nom du fichier virtuel dans lequel vous pouvez ecrire pour envoyer vos signaux de clavier
 #define FICHIER_CLAVIER_VIRTUEL "/dev/hidg0"
@@ -18,6 +20,14 @@
 // le pointeur de fichier correspondant.
 // Elle est deja implementee pour vous dans emulateurClavier.c
 FILE* initClavier();
+
+enum BufferMode_t {
+    NO_SHIFT    = 0,
+    INIT        = 1,
+    SHIFT       = 2
+};
+
+unsigned int ascii2UsbHid(char ascii);
 
 /*
 Fonction ecrivant les caracteres sur le bus USB. Elle recoit les arguments suivants:
