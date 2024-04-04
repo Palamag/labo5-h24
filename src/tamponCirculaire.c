@@ -49,7 +49,7 @@ int initTamponCirculaire(size_t taille){
     pthread_mutex_init(&mutexTampon, NULL);
 
     // threads non initialise
-    // pthread_lock(&mutexTampon);
+    // pthread_mutex_lock(&mutexTampon);
     
     memoireTaille = taille;
 
@@ -68,14 +68,14 @@ int initTamponCirculaire(size_t taille){
     memoire = malloc(taille * sizeof(struct requete));
 
     // threads non initialise
-    // pthread_unlock(&mutexTampon);
+    // pthread_mutex_unlock(&mutexTampon);
 
     return 0;
 }
 
 void resetStats(){
     // Reinitialise les variables de statistique
-    pthread_lock(&mutexTampon);
+    pthread_mutex_lock(&mutexTampon);
 
     nombreRequetesRecues = 0;
     nombreRequetesTraitees = 0;
@@ -84,12 +84,12 @@ void resetStats(){
     tempsDebutPeriode = get_time();
     sommeTempsAttente = 0;
 
-    pthread_unlock(&mutexTampon);
+    pthread_mutex_unlock(&mutexTampon);
 }
 
 void calculeStats(struct statistiques *stats){
     double tempsCourant;
-    pthread_lock(&mutexTampon);
+    pthread_mutex_lock(&mutexTampon);
 
     stats->nombreRequetesEnAttente = nombreRequetesRecues - nombreRequetesTraitees;
     stats->nombreRequetesTraitees = nombreRequetesTraitees;
@@ -102,7 +102,7 @@ void calculeStats(struct statistiques *stats){
     stats->mu = nombreRequetesTraitees / tempsCourant;
     stats->rho = stats->lambda / stats->mu;
 
-    pthread_unlock(&mutexTampon);
+    pthread_mutex_unlock(&mutexTampon);
 }
 
 int insererDonnee(struct requete *req){
@@ -120,7 +120,7 @@ int insererDonnee(struct requete *req){
     // Mettre a jour les variables necessaires aux statistiques (comme nombreRequetesRecues, par exemple)
     //
     // N'oubliez pas de proteger les operations qui le necessitent par un mutex!
-    pthread_lock(&mutexTampon);
+    pthread_mutex_lock(&mutexTampon);
 
     memcpy(&memoire[posEcriture * sizeof(struct requete)], req, sizeof(struct requete));
     posEcriture = (posEcriture + 1) % memoireTaille;
@@ -134,7 +134,7 @@ int insererDonnee(struct requete *req){
 
     nombreRequetesRecues++;
 
-    pthread_unlock(&mutexTampon);
+    pthread_mutex_unlock(&mutexTampon);
 
     return 0;
 }
@@ -155,7 +155,7 @@ int consommerDonnee(struct requete *req){
     // N'oubliez pas de proteger les operations qui le necessitent par un mutex!
     if (longueurCourante > 0) {
         double current_time;
-        pthread_lock(&mutexTampon);
+        pthread_mutex_lock(&mutexTampon);
 
         memcpy(req, &memoire[posLecture * sizeof(struct requete)], sizeof(struct requete));
         
@@ -166,7 +166,7 @@ int consommerDonnee(struct requete *req){
         current_time = get_time();
         sommeTempsAttente += current_time - req->tempsReception;
 
-        pthread_unlock(&mutexTampon);
+        pthread_mutex_unlock(&mutexTampon);
         return 1;
     }
     return 0;
