@@ -153,9 +153,9 @@ int consommerDonnee(struct requete *req){
     //      Retourner 1 pour indiquer qu'une requete disponible a ete copiee dans req.
     //
     // N'oubliez pas de proteger les operations qui le necessitent par un mutex!
+    pthread_mutex_lock(&mutexTampon);
     if (longueurCourante > 0) {
         double current_time;
-        pthread_mutex_lock(&mutexTampon);
 
         memcpy(req, &memoire[posLecture * sizeof(struct requete)], sizeof(struct requete));
         
@@ -169,6 +169,7 @@ int consommerDonnee(struct requete *req){
         pthread_mutex_unlock(&mutexTampon);
         return 1;
     }
+    pthread_mutex_unlock(&mutexTampon);
     return 0;
 }
 
